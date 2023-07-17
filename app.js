@@ -10,7 +10,7 @@ app.use(express.static("public"));
 app.use(express.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
-mongoose.connect("mongodb+srv://darshnagdeve35:pmta1WlrkBSYk3pO@cluster0.yvb14bv.mongodb.net/userDB")
+mongoose.connect(process.env.uri)
 
 const userSchema = new mongoose.Schema(
   {
