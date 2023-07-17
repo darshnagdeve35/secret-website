@@ -7,6 +7,7 @@ var encrypt = require('mongoose-encryption');
 require('dotenv').config()
 var md5 = require('md5');
 const bcrypt = require('bcrypt');
+const saltRounds = 10;
 
 app.use(express.static("public"));
 app.use(express.urlencoded({extended: true}));
@@ -39,13 +40,14 @@ app.get('/register', (req, res) => {
 
 app.post('/register',function(req,res)
 {
-    async function saveUser(){
-      
+    async function Hash_saveUser(){
     try {
+      const hash = bcrypt.hash(req.body.password, saltRounds);
+
       const newUser = new user(
         {
           email:req.body.username,
-          password:md5(req.body.password)
+          password:hash
         })
 
       newUser.save();
@@ -54,7 +56,7 @@ app.post('/register',function(req,res)
       console.error(error)
     } }
 
-    saveUser();
+    Hash_saveUser();
 })
 
 app.listen(port, () => console.log(`Server started at port: ${port}`)
@@ -65,17 +67,25 @@ app.post('/login', (req, res) => {
   async function tally_user()
   {
     const email = req.body.username
-    const password = md5(req.body.password)
+    const password = req.body.password
     
   try {
-    const findUser = await user.findOne({email:email,password:password})
+ 
+    const findUser = await user.findOne({email:email})
+
    if(findUser)
    {
-    if (findUser.password==password) {
+    const compare_password = bcrypt.compare(password, findUser.password);
+
+    if (compare_password) {
       res.render("secrets")
     } else {
       console.log("user not found")
     }
+   }
+   else
+   {
+    console.error("err")
    }
 
   } catch (error) {
